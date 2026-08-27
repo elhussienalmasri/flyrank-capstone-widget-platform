@@ -15,6 +15,7 @@ import visitorAuthRoutes from './routes/visitorAuth.routes.js';
 import submissionsRoutes from './routes/submissions.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import configRoutes from './routes/config.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -27,6 +28,10 @@ app.use(express.json({ limit: '100kb' })); // reject absurdly large bodies early
 app.use(cors()); // default CORS for admin/auth routes in dev
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+// Public feature flags the frontend needs before rendering (e.g. whether
+// to offer the "require email verification" widget option at all)
+app.use('/api/config', configRoutes);
 
 // 1. Owner (authenticated)
 app.use('/api/auth', authRoutes);
