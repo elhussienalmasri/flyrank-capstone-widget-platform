@@ -7,11 +7,18 @@ import { submissionNotificationTemplate, formatFieldsPlainText } from './emailTe
 // Returns true/false (did it succeed) instead of throwing — callers
 // use the result to record `notified` on the submission, but never
 // to decide whether the submission itself succeeded.
-export async function notifySubmission({ widgetTitle, fields }) {
+export async function notifySubmission({ widgetTitle, fields, to }) {
+  if (!to) {
+    // No real tenant email to notify — treat as a non-fatal skip,
+    // same as any other failed side effect.
+    console.error('[notify] no recipient email available — skipping notification');
+    return false;
+  }
+
   try {
     const mailer = getMailer();
     await mailer.send({
-      to: 'owner@example.com', // placeholder — a later phase could look up the tenant's real email
+      to,
       subject: `New submission: ${widgetTitle}`,
       body: `A visitor submitted the "${widgetTitle}" widget:\n\n${formatFieldsPlainText(fields)}`,
       html: submissionNotificationTemplate({ widgetTitle, fields }),
