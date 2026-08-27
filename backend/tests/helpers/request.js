@@ -25,7 +25,19 @@ export function request(method, path, body, token, extraHeaders = {}) {
           res.on('data', (chunk) => (raw += chunk));
           res.on('end', () => {
             server.close();
-            resolve({ status: res.statusCode, body: raw ? JSON.parse(raw) : null });
+            // Not every endpoint returns JSON — GET /widget.js
+            // returns the raw JS bundle, for one. Fall back to the
+            // raw text instead of throwing, so tests that only care
+            // about status/headers on non-JSON routes don't crash.
+            let parsedBody = null;
+            if (raw) {
+              try {
+                parsedBody = JSON.parse(raw);
+              } catch {
+                parsedBody = raw;
+              }
+            }
+            resolve({ status: res.statusCode, body: parsedBody });
           });
         }
       );

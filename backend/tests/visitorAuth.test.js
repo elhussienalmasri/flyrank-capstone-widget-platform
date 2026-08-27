@@ -79,17 +79,21 @@ test('the same email CAN sign up separately on two different signup widgets unde
   const listRes = await request('GET', '/api/dashboard/visitors', null, token);
   assert.strictEqual(listRes.body.visitors.length, 2); // two genuinely separate accounts
 
-  // Login stays tenant-wide (not widget-scoped) on purpose, so a
-  // separate login widget still works regardless of which signup
-  // widget created the account. The known trade-off: with the same
-  // email now on two widgets, login resolves to whichever account
-  // was created MOST RECENTLY — here, Widget B's — regardless of
-  // which widget's login endpoint is called.
-  const loginRes = await request('POST', `/widgets/${widgetAId}/login`, { email, password: 'passwordB123' });
-  assert.strictEqual(loginRes.status, 200); // matches Widget B's account, the newer one
+  // Login is resolved per-widget (see resolveSignupWidget in
+  // visitorAuth.service.js), not tenant-wide: calling login directly
+  // on a signup widget's own id only authenticates accounts created
+  // through THAT widget. The two accounts are fully isolated.
+  const loginAViaOwnEndpoint = await request('POST', `/widgets/${widgetAId}/login`, { email, password: 'passwordA123' });
+  assert.strictEqual(loginAViaOwnEndpoint.status, 200);
 
-  const staleLoginRes = await request('POST', `/widgets/${widgetBId}/login`, { email, password: 'passwordA123' });
-  assert.strictEqual(staleLoginRes.status, 401); // Widget A's account is no longer what email-only login resolves to
+  const loginAWithBsPassword = await request('POST', `/widgets/${widgetAId}/login`, { email, password: 'passwordB123' });
+  assert.strictEqual(loginAWithBsPassword.status, 401); // that account belongs to widget B's namespace
+
+  const loginBViaOwnEndpoint = await request('POST', `/widgets/${widgetBId}/login`, { email, password: 'passwordB123' });
+  assert.strictEqual(loginBViaOwnEndpoint.status, 200);
+
+  const loginBWithAsPassword = await request('POST', `/widgets/${widgetBId}/login`, { email, password: 'passwordA123' });
+  assert.strictEqual(loginBWithAsPassword.status, 401); // that account belongs to widget A's namespace
 });
 
 test('login rejects wrong password without revealing which part was wrong', async () => {
@@ -112,10 +116,10 @@ test('a signup widget gets sensible default fields when none are supplied', asyn
   assert.deepStrictEqual(fieldNames, ['name', 'email', 'password', 'confirmPassword']);
 });
 
-test('a cta widget with no formFields gets an empty array (owner must define their own)', async () => {
+test('a cta widget with no formFields is rejected — the owner must define at least one', async () => {
   const token = await registerTenant('ctadefaults');
   const createRes = await request('POST', '/api/widgets', { type: 'cta', title: 'Special Offer' }, token);
-  assert.deepStrictEqual(createRes.body.widget.formFields, []);
+  assert.strictEqual(createRes.status, 400); // superseded by widgets.test.js's "at least one field" rule
 });
 
 test('registered visitors appear in the dashboard, without a password hash, and logging in does not add a second entry', async () => {
