@@ -1,0 +1,43 @@
+<!doctype html>
+<!--
+  Demo: a plain HTML page with a button that opens a widget as a
+  popup. Requires the widget's type to be 'popover' — that's what
+  makes widget.js render it hidden-by-default instead of inline.
+
+  Two ways to trigger it are shown below; you only need one.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Popover trigger demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 60px auto; }
+    button.trigger {
+      background: #4f46e5; color: #fff; border: none; border-radius: 6px;
+      padding: 10px 16px; font-size: 14px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>My site</h1>
+  <p>Click the button below to open the signup popup.</p>
+
+  <!--
+    Option A — no JS needed on your side: add data-widget-open with
+    the widget's id. Works automatically once widget.js has loaded.
+  -->
+  <button class="trigger" data-widget-open="4216efa2-aa57-48c1-b374-8ba2093e1c">
+    Sign up
+  </button>
+
+  <!--
+    Option B — trigger it yourself from your own JS, e.g. after some
+    other event (a scroll, a delay, a different button):
+      <button onclick="WidgetPlatform.open('4216efa2-aa57-48c1-b374-8ba2093e1c')">
+  -->
+
+  <!-- Load the widget once, anywhere on the page. It renders nothing
+       visible until a trigger opens it. -->
+  <script src="http://localhost:4000/widget.js?id=4216efa2-aa57-48c1-b374-8ba2093e1c"></script>
+</body>
+</html>

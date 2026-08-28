@@ -1,0 +1,35 @@
+<!doctype html>
+<!--
+  This is the "customer website" — a plain HTML file with zero
+  relation to the widget platform's own codebase, served from a
+  different origin (a different port) than the API. It exists to
+  prove the embed snippet genuinely works cross-origin, not just
+  when tested from inside the app itself.
+
+  Run it with: npx serve customer-site-fixture -l 5500
+  (or python -m http.server, or file:// directly)
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Acme Bakery — a totally unrelated customer website</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 60px auto; color: #111; }
+    h1 { font-size: 22px; }
+  </style>
+</head>
+<body>
+  <h1>Welcome to Acme Bakery</h1>
+  <p>Fresh sourdough, daily. This page has nothing to do with the widget platform's own code —
+     it's just a plain site that pasted in a one-line script tag below.</p>
+
+  <hr />
+
+  <!--
+    STEP: replace the widget id below with a real one from your own
+    account (create a widget via the dashboard, then copy its id
+    or the whole snippet from the "Copy snippet" button).
+  -->
+  <script src="http://localhost:4000/widget.js?id=REPLACE_WITH_REAL_WIDGET_ID"></script>
+</body>
+</html>
