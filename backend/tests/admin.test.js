@@ -5,9 +5,20 @@
 // are configured in the environment they're run in.
 import { test, before } from 'node:test';
 import assert from 'node:assert';
-import { request, registerTenant } from './helpers/request.js';
-import env from '../src/config/env.js';
-import { ensureAdminAccount } from '../src/services/auth.service.js';
+
+// Keep admin-only test credentials in the test itself so a developer's .env
+// never needs real or dummy admin credentials just to run the suite.
+process.env.ADMIN_EMAIL = 'admin-test@example.com';
+process.env.ADMIN_PASSWORD = 'TestAdminPassword123!';
+
+const [requestHelpers, { default: env }, authService] = await Promise.all([
+  import('./helpers/request.js'),
+  import('../src/config/env.js'),
+  import('../src/services/auth.service.js'),
+]);
+
+const { request, registerTenant } = requestHelpers;
+const { ensureAdminAccount } = authService;
 
 const adminConfigured = Boolean(env.adminEmail && env.adminPassword);
 let adminToken = null;

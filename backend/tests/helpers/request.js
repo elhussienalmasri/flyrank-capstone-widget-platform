@@ -2,6 +2,7 @@
 // request, then tears it down. Keeps every test file dependency-free
 // beyond node:test itself.
 import http from 'node:http';
+import './setup.js';
 import app from '../../src/app.js';
 import * as pendingRegistrationsRepo from '../../src/repositories/pendingRegistrations.repository.js';
 

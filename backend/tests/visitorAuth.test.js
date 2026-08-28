@@ -388,10 +388,10 @@ test('verify-email rejects a wrong code', async () => {
 test('verify-email rejects a code that does not match the exact widget it was issued for', async () => {
   const token = await registerTenant('crosswidgetcode');
   const widgetAId = (await request('POST', '/api/widgets', {
-    type: 'signup', title: 'A', displayOptions: { emailVerificationEnabled: true },
+    type: 'signup', title: 'Widget A', displayOptions: { emailVerificationEnabled: true },
   }, token)).body.widget.id;
   const widgetBId = (await request('POST', '/api/widgets', {
-    type: 'signup', title: 'B', displayOptions: { emailVerificationEnabled: true },
+    type: 'signup', title: 'Widget B', displayOptions: { emailVerificationEnabled: true },
   }, token)).body.widget.id;
 
   const email = `crosswidgetcode-${Date.now()}@example.com`;
