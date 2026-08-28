@@ -4,7 +4,9 @@
 import { after } from 'node:test';
 
 process.env.NODE_ENV = 'test';
-process.env.MAILER = 'console';
+process.env.MAILER = 'smtp';
+process.env.SMTP_USER = 'test-user';
+process.env.SMTP_PASS = 'test-password';
 
 const { pool } = await import('../../src/config/db.js');
 

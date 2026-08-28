@@ -1,9 +1,10 @@
 // Login. Backend returns the same error for "no such
 // email" and "wrong password" — we surface it as-is, don't guess.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import FormField, { inputClass } from '../components/FormField';
+import { getConfig } from '../api/configApi';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -12,6 +13,15 @@ export default function LoginPage() {
   const [formValues, setFormValues] = useState({ email: '', password: '' });
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [emailEnabled, setEmailEnabled] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getConfig()
+      .then((config) => { if (!cancelled) setEmailEnabled(config.emailEnabled === true); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   function handleChange(e) {
     setFormValues((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -73,11 +83,13 @@ export default function LoginPage() {
           {submitting ? 'Logging in…' : 'Log in'}
         </button>
 
-        <p className="text-sm text-gray-500 mt-3 text-center">
-          <Link to="/forgot-password" className="text-indigo-600 hover:underline">Forgot password?</Link>
-        </p>
+        {emailEnabled && (
+          <p className="text-sm text-gray-500 mt-3 text-center">
+            <Link to="/forgot-password" className="text-indigo-600 hover:underline">Forgot password?</Link>
+          </p>
+        )}
 
-        <p className="text-sm text-gray-500 mt-2 text-center">
+        <p className={`text-sm text-gray-500 ${emailEnabled ? 'mt-2' : 'mt-3'} text-center`}>
           Don't have an account?{' '}
           <Link to="/register" className="text-indigo-600 hover:underline">Create one</Link>
         </p>

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
+import EmailFeatureRoute from './components/EmailFeatureRoute';
 import RootRoute from './components/RootRoute';
 
 import RegisterPage from './pages/RegisterPage';
@@ -31,9 +32,9 @@ export default function App() {
               /dashboard based on the returned tenant.role. */}
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/verify-email" element={<VerifyEmailPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<EmailFeatureRoute><VerifyEmailPage /></EmailFeatureRoute>} />
+          <Route path="/forgot-password" element={<EmailFeatureRoute><ForgotPasswordPage /></EmailFeatureRoute>} />
+          <Route path="/reset-password" element={<EmailFeatureRoute><ResetPasswordPage /></EmailFeatureRoute>} />
           <Route path="/change-password" element={<ProtectedRoute><ChangePasswordPage /></ProtectedRoute>} />
 
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

@@ -39,7 +39,7 @@ function toPublicVisitor(visitor) {
 // visitor's account is not created until they verify — same
 // deferred pattern as tenant registration.
 function isEmailVerificationEnabled(widget) {
-  return Boolean(widget.display_options && widget.display_options.emailVerificationEnabled === true);
+  return env.emailDeliveryEnabled && Boolean(widget.display_options && widget.display_options.emailVerificationEnabled === true);
 }
 
 // A login widget doesn't hold accounts itself — it authenticates

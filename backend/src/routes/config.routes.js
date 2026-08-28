@@ -15,7 +15,7 @@ router.get('/', (req, res) => {
     // configured. A visitor-facing feature (like widget signup
     // verification) that depends on email being delivered should
     // check THIS, not emailFeaturesEnabled alone.
-    emailEnabled: env.emailFeaturesEnabled && env.mailer === 'smtp',
+    emailEnabled: env.emailDeliveryEnabled,
   });
 });
 

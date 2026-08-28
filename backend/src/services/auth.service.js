@@ -79,7 +79,7 @@ export async function register({ companyName, email, password }) {
 
   // Verification required before the account is created at all —
   // stage the signup instead of creating a tenant row yet.
-  if (env.emailFeaturesEnabled && env.requireEmailVerificationForSignup) {
+  if (env.emailDeliveryEnabled && env.requireEmailVerificationForSignup) {
     const verificationToken = generateToken();
     const verificationExpires = hoursFromNow(24);
     await pendingRegistrationsRepo.upsert({ companyName, email, passwordHash, verificationToken, verificationExpires });
@@ -91,13 +91,13 @@ export async function register({ companyName, email, password }) {
   // create the account immediately, as before.
   let verificationToken = null;
   let verificationExpires = null;
-  if (env.emailFeaturesEnabled) {
+  if (env.emailDeliveryEnabled) {
     verificationToken = generateToken();
     verificationExpires = hoursFromNow(24);
   }
 
   const tenant = await tenantsRepo.create({ companyName, email, passwordHash, verificationToken, verificationExpires });
-  if (env.emailFeaturesEnabled) {
+  if (env.emailDeliveryEnabled) {
     await sendVerificationEmailTo(email, verificationToken);
   }
 
@@ -130,7 +130,7 @@ export async function getById(tenantId) {
 }
 
 export async function verifyEmail(token) {
-  if (!env.emailFeaturesEnabled) {
+  if (!env.emailDeliveryEnabled) {
     throw new ApiError(403, 'Email verification is disabled on this platform');
   }
 
@@ -166,7 +166,7 @@ export async function verifyEmail(token) {
 }
 
 export async function forgotPassword(email) {
-  if (!env.emailFeaturesEnabled) {
+  if (!env.emailDeliveryEnabled) {
     throw new ApiError(403, 'Password reset by email is disabled on this platform');
   }
 
@@ -197,7 +197,7 @@ export async function forgotPassword(email) {
 }
 
 export async function resetPassword(token, newPassword) {
-  if (!env.emailFeaturesEnabled) {
+  if (!env.emailDeliveryEnabled) {
     throw new ApiError(403, 'Password reset by email is disabled on this platform');
   }
 

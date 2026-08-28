@@ -48,6 +48,13 @@ export default {
   // still works either way, since it needs no email delivery).
   emailFeaturesEnabled: process.env.EMAIL_FEATURES_ENABLED !== 'false',
 
+  // Email-only flows need a delivery-capable mailer and configured SMTP
+  // credentials. The console mailer (and an unconfigured SMTP account)
+  // cannot reach a user's inbox.
+  emailDeliveryEnabled: process.env.EMAIL_FEATURES_ENABLED !== 'false'
+    && (process.env.MAILER || 'console') === 'smtp'
+    && Boolean(process.env.SMTP_USER && process.env.SMTP_PASS),
+
   // When true (default), a new owner account is NOT created at
   // registration time — the signup is staged, a verification email
   // is sent, and the real account only gets created once the link
