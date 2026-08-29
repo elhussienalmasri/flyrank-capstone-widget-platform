@@ -52,7 +52,7 @@ function validateAgainstWidgetFields(widget, fields) {
   }
 }
 
-export async function submit({ widgetId, fields, ipAddress }) {
+export async function submit({ widgetId, fields, ipAddress, notify = notifySubmission }) {
   const widget = await widgetsService.assertWidgetExists(widgetId); // 404 if the widget doesn't exist
 
   validateAgainstWidgetFields(widget, fields); // real 400s — a legitimate user deserves an honest error
@@ -92,11 +92,19 @@ export async function submit({ widgetId, fields, ipAddress }) {
   // fresh here rather than carried on the widget row, since it can
   // change (the owner's own email is the source of truth).
   const tenant = await tenantsRepo.findById(widget.tenant_id);
-  const notified = await notifySubmission({
-    widgetTitle: widget.title,
-    fields: cleanFields,
-    to: tenant ? tenant.email : null,
-  });
+  let notified = false;
+  try {
+    notified = await notify({
+      widgetTitle: widget.title,
+      fields: cleanFields,
+      to: tenant ? tenant.email : null,
+    });
+  } catch (err) {
+    // Defense in depth: notifySubmission normally catches delivery failures,
+    // but a custom mailer/webhook must never turn a stored submission into a
+    // failed visitor request.
+    console.error('[notify] side effect failed (submission still succeeds):', err.message);
+  }
 
   return { dropped: false, submission: toPublicSubmission({ ...row, notified }) };
 }

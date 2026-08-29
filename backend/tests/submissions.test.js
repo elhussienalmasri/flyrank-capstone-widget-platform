@@ -3,6 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { request, registerTenant } from './helpers/request.js';
+import { submit } from '../src/services/submissions.service.js';
 
 async function createWidget(token) {
   const res = await request('POST', '/api/widgets', {
@@ -51,6 +52,26 @@ test('accepts a valid submission and it appears in the dashboard', async () => {
   assert.strictEqual(dashRes.status, 200);
   assert.strictEqual(dashRes.body.submissions.length, 1);
   assert.strictEqual(dashRes.body.submissions[0].fields.email, 'visitor@example.com');
+});
+
+test('a failing confirmation notification does not prevent the submission from being stored', async () => {
+  const token = await registerTenant('notificationfailure');
+  const widgetId = await createWidget(token);
+
+  const result = await submit({
+    widgetId,
+    fields: { email: 'stored-despite-failure@example.com' },
+    ipAddress: '127.0.0.1',
+    notify: async () => { throw new Error('test notification delivery failure'); },
+  });
+
+  assert.strictEqual(result.dropped, false);
+  assert.strictEqual(result.submission.notified, false);
+
+  const dashRes = await request('GET', '/api/dashboard/submissions', null, token);
+  assert.strictEqual(dashRes.status, 200);
+  assert.strictEqual(dashRes.body.submissions.length, 1);
+  assert.strictEqual(dashRes.body.submissions[0].fields.email, 'stored-despite-failure@example.com');
 });
 
 test('honeypot field silently drops the submission (still 2xx, never stored)', async () => {
