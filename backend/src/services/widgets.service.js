@@ -27,7 +27,7 @@ const DEFAULT_FIELDS_BY_TYPE = {
 };
 
 function buildEmbedSnippet(widgetId) {
-  return `<script src="${env.publicBaseUrl}/widget.js?id=${widgetId}"></script>`;
+  return `<script src="${env.appBaseUrl}/widget.js?id=${widgetId}"></script>`;
 }
 
 function toPublicWidget(row) {

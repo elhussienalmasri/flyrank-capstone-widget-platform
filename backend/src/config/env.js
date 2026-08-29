@@ -1,7 +1,10 @@
 // Loads and validates environment variables once, at boot.
 // Fail fast: if something required is missing, crash immediately
 // instead of failing weirdly later mid-request.
-import 'dotenv/config';
+import dotenv from 'dotenv';
+
+// Docker injects variables directly. Local npm runs load backend/.env.
+dotenv.config();
 
 const required = ['DATABASE_URL', 'JWT_SECRET'];
 
@@ -20,7 +23,7 @@ export default {
 
   // Base URL used to build embed <script> snippets — must be
   // reachable by browsers on sites the owner embeds the widget on.
-  publicBaseUrl: process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 4000}`,
+  appBaseUrl: process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 4000}`,
 
   // Allowed origins for the PUBLIC submission/config endpoints.
   // '*' in dev; a comma-separated allowlist in production.
