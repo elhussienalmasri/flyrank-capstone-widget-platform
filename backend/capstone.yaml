@@ -1,9 +1,17 @@
 name: Embeddable Widget & Lead-Capture Platform
-run: docker compose up -d && npm install && npm run migrate && npm run dev
-seed: npm run migrate
+# Docker method: from the project root, first copy backend/.env.example to .env
+# and configure the values for your setup.
+run: cd .. && docker compose up -d
+# Local npm method:
+#   cd backend && cp .env.example .env && npm install && npm run migrate && npm run dev
+#   cd frontend && cp .env.example .env && npm install && npm run dev
+migrate: npm run migrate
+seed: npm run seed
 test: npm test
 base_url: http://localhost:4000
 endpoints:
+  - method: GET
+    path: /api/config
   - method: POST
     path: /api/auth/register
   - method: POST
@@ -12,10 +20,31 @@ endpoints:
     path: /api/auth/me
     auth: bearer
   - method: POST
+    path: /api/auth/verify-email
+  - method: POST
+    path: /api/auth/forgot-password
+  - method: POST
+    path: /api/auth/reset-password
+  - method: POST
+    path: /api/auth/change-password
+    auth: bearer
+  - method: GET
+    path: /api/account
+    auth: bearer
+  - method: POST
     path: /api/widgets
     auth: bearer
   - method: GET
     path: /api/widgets
+    auth: bearer
+  - method: GET
+    path: /api/widgets/:id
+    auth: bearer
+  - method: PATCH
+    path: /api/widgets/:id
+    auth: bearer
+  - method: DELETE
+    path: /api/widgets/:id
     auth: bearer
   - method: GET
     path: /widget.js
@@ -28,4 +57,35 @@ endpoints:
     auth: bearer
   - method: GET
     path: /api/dashboard/submissions
+    auth: bearer
+  - method: GET
+    path: /api/dashboard/submissions?widgetId=:id
+    auth: bearer
+  - method: DELETE
+    path: /api/dashboard/submissions/:id
+    auth: bearer
+  - method: GET
+    path: /api/dashboard/visitors
+    auth: bearer
+  - method: GET
+    path: /api/dashboard/visitors?widgetId=:id
+    auth: bearer
+  - method: DELETE
+    path: /api/dashboard/visitors/:id
+    auth: bearer
+  - method: POST
+    path: /widgets/:id/signup
+  - method: POST
+    path: /widgets/:id/login
+  - method: POST
+    path: /widgets/:id/verify-email
+  - method: POST
+    path: /widgets/:id/forgot-password
+  - method: POST
+    path: /widgets/:id/reset-password
+  - method: GET
+    path: /api/admin/accounts
+    auth: bearer
+  - method: DELETE
+    path: /api/admin/accounts/:id
     auth: bearer
