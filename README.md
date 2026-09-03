@@ -4,6 +4,31 @@ A full-stack platform for creating embeddable widgets — lead-capture forms, re
 visitor accounts, and call-to-action banners — that any website owner can drop
 into their site with a single `<script>` tag.
 
+## Table of contents
+
+- [1. Description](#1--description)
+- [2. Roles](#2-%E2%80%8D-roles)
+  - [Create a platform admin](#%E2%80%8D-create-a-platform-admin)
+- [3. Features](#3--features)
+- [4. Technologies](#4-%EF%B8%8F-technologies)
+- [5. Installation](#5--installation)
+  - [Clone the repository](#1--clone-the-repository)
+  - [Configure environment variables](#2-%EF%B8%8F-configure-environment-variables)
+  - [Install dependencies](#3--install-dependencies)
+- [6. Running the Project](#6-%EF%B8%8F-running-the-project)
+  - [Run locally with npm](#1--run-locally-with-npm)
+  - [Run the full stack with Docker](#2--run-the-full-stack-with-docker)
+  - [Add demo data](#-add-demo-data-optional)
+- [7. Run backend tests](#7--run-backend-tests)
+- [8. Project Structure](#8-%EF%B8%8F-project-structure)
+- [9. Widgets and Pages](#9--widgets-and-pages)
+  - [Widget types](#-widget-types-created-from-the-dashboard-embedded-via-script)
+  - [Frontend pages](#%EF%B8%8F-frontend-pages)
+  - [Backend API routes](#-backend-api-routes)
+- [10. Customer website integration](#10--customer-website-integration)
+  - [Direct embed customer website test fixtures](#1-direct-embed-customer-website-test-fixtures)
+  - [React customer website authentication](#2-react-customer-website-authentication)
+    - [Link to React Project using Widget Platform](https://github.com/elhussienalmasri/exercise/tree/crud-app-with-widget-platform-auth)
 
 ---
 
@@ -54,7 +79,7 @@ Once logged in, an admin can use the Change password action to update their pass
   required *before* the account is created (configurable)
 - Forgot-password and reset-password flows when `EMAIL_FEATURES_ENABLED=true`
   and SMTP delivery is configured; change-password is available after login
-- Full widget CRUD across 5 types (see the [widget types table](#widget-types-created-from-the-dashboard-embedded-via-script))
+- Full widget CRUD across 5 types (see the [widget types table](#-widget-types-created-from-the-dashboard-embedded-via-script))
 - A field editor for building custom lead-capture forms, with per-field
   `required` toggles and a minimum of one field enforced
 - A dashboard with live stats: total submissions, total visitors, countries
@@ -328,9 +353,9 @@ widget-platform
 | Home page | `/` | No (redirects to `/dashboard` if already logged in) |
 | Register | `/register` | No |
 | Login | `/login` | No (routes to `/admin/accounts` or `/dashboard` based on role) |
-| Verify email | `/verify-email` | No |
+| Verify email | `/verify-email` | No — opened from the verification email link; requires `EMAIL_FEATURES_ENABLED=true` and configured SMTP |
 | Forgot password | `/forgot-password` | No — email only; requires `EMAIL_FEATURES_ENABLED=true` and configured SMTP |
-| Reset password | `/reset-password` | No |
+| Reset password | `/reset-password` | No — requires `EMAIL_FEATURES_ENABLED=true` and configured SMTP |
 | Change password | `/change-password` | Yes |
 | Dashboard | `/dashboard` | Yes |
 | Widgets list | `/widgets` | Yes |
@@ -355,7 +380,12 @@ widget-platform
 
 ---
 
-### 🌐 Customer website test fixtures
+## 10. 🌐 Customer website integration
+
+Customer websites can add Widget Platform widgets in two ways: direct script
+embedding or a React integration, shown below.
+
+#### 1. Direct embed customer website test fixtures
 
 The test customer websites are located in:
 
@@ -365,3 +395,39 @@ backend/customer-site-fixture/
 
 - `index.html` — tests embedded widgets on a simple customer website.
 - `popover.html` — tests the popover widget on a simple customer website.
+
+#### 2. React customer website authentication
+
+A React customer website can load a Widget Platform signup or login widget and
+receive the authenticated visitor's safe data through the browser event:
+
+```jsx
+import { useEffect, useState } from 'react';
+
+export default function CustomerLogin() {
+  const [visitor, setVisitor] = useState(null);
+
+  useEffect(() => {
+    function onAuthenticated(event) {
+      setVisitor(event.detail); // { widgetId, visitorId, email }
+    }
+
+    window.addEventListener('widget-visitor-authenticated', onAuthenticated);
+
+    const script = document.createElement('script');
+    script.src = 'https://example.com/widget.js?id=YOUR_LOGIN_WIDGET_ID';
+    script.async = true;
+    document.getElementById('widget-platform-login').appendChild(script);
+
+    return () => {
+      window.removeEventListener('widget-visitor-authenticated', onAuthenticated);
+      script.remove();
+    };
+  }, []);
+
+  return <div id="widget-platform-login" />;
+}
+```
+
+React customer websites can add Widget Platform authentication with the generated
+embed script, as shown in the [React Website Project](https://github.com/elhussienalmasri/exercise/tree/crud-app-with-widget-platform-auth).

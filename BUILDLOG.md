@@ -30,7 +30,7 @@
  visitor-account database. Therefore, a visitor who created an account through one website could log 
  in through another website’s login widget. A visitor should only be able to log in through the website 
  where they created their account.
-- When an owner had more than one signup widget, the login widget configuration did not let the owner choose which signup widget it should use. A visitor could choose a login widget and fail to sign in even though their account existed, because that login widget was not linked to the correct signup widget. This was fixed by adding a signup-widget selection field to the login-widget UI, saving the link in the backend configuration, and authenticating visitors against the selected signup widget.
+- When an owner had more than one signup widget, the login widget configuration did not let the owner choose which signup widget it should use. A visitor could choose a login widget and fail to sign in even though their account existed, because that login widget was not linked to the correct signup widget. This was fixed by adding a signup-widget selection field to the login-widget UI, saving the link in the backend configuration, and authenticating visitors against the selected signup widget. Without this link, the UI was confusing: an owner could create any login widget, but it might not work or sign in the visitor when multiple signup widgets exist.
 - Account deletion was initially available to a normal user even though the
   requested feature was for a platform admin to manage accounts.
 - The submission-notification recipient email was initially hardcoded instead
@@ -49,7 +49,6 @@
 The email-link sign-in flow was implemented for Widget Platform owner authentication,
 - When an already authenticated owner opened the root URL, the app initially
   kept them there instead of redirecting them to `/dashboard`.
-- When an owner creates more than one signup widget, the login-widget form did not let them choose which signup widget it should use. This was later fixed by adding a UI option to link each login widget to the correct signup widget and saving that link in the backend configuration. Without this link, the UI was confusing: an owner could create any login widget, but it might not work or sign in the visitor when multiple signup widgets exist.
 
 - On the `/widgets` page, AI gave every widget a **View submissions** link. For a signup widget, it incorrectly opened `/submissions?widgetId=...`; it should navigate to `/visitors?widgetId=...` to show the visitors for that signup widget.
 
@@ -66,6 +65,8 @@ The email-link sign-in flow was implemented for Widget Platform owner authentica
 ## What I changed or verified myself
 
 - Fixed the issues listed above and applied solutions, including replacing signup-widget email-verification links with verification codes. This keeps visitors on the customer website and verifies them against the correct signup widget.
+
+- Added a general overview that identifies the features, their number, and the functionality of every feature. It also explains the design of each feature, its fields, what appears to the customer, and what happens after the user submits it, including a thank-you popover with a website or “Learn more” link. I also identified the number of pages and the responsibilities of every page.
 
 - Improved the UI and organization by moving accounts created through signup widgets to the `/visitors` page instead of treating them as submissions.
 
