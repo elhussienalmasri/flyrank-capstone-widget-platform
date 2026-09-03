@@ -34,6 +34,26 @@ function toPublicVisitor(visitor) {
   };
 }
 
+// Verifies that the visitor token belongs to the requested widget and tenant,
+// then returns only safe visitor data for the authenticated customer website.
+export async function me(widgetId, { visitorId, tenantId, tokenWidgetId }) {
+  if (widgetId !== tokenWidgetId) {
+    throw new ApiError(403, 'Visitor token is not valid for this widget');
+  }
+
+  const widget = await widgetsRepo.findByIdPublic(widgetId);
+  if (!widget || widget.tenant_id !== tenantId) {
+    throw new ApiError(404, 'Widget not found');
+  }
+
+  const visitor = await visitorsRepo.findVisitorById(visitorId);
+  if (!visitor || visitor.tenant_id !== tenantId) {
+    throw new ApiError(404, 'Visitor not found');
+  }
+
+  return toPublicVisitor({ ...visitor, name: visitor.name || '' });
+}
+
 // Off by default — the owner opts in per `signup` widget via a
 // checkbox stored in that widget's displayOptions. When on, the
 // visitor's account is not created until they verify — same
@@ -140,7 +160,7 @@ export async function login(widgetId, { email, password }) {
   if (!matches) throw new ApiError(401, 'Invalid email or password');
 
   const token = signVisitorToken(visitor, widgetId);
-  return { visitor: toPublicVisitor(visitor), token };
+  return { visitor: toPublicVisitor({ ...visitor, name: visitor.name || '' }), token };
 }
 
 export async function verifyEmail(widgetId, { email, code }) {
@@ -167,7 +187,7 @@ export async function verifyEmail(widgetId, { email, code }) {
 
   const verifiedVisitor = { ...visitor, email_verified: true };
   const authToken = signVisitorToken(verifiedVisitor, widgetId);
-  return { verified: true, visitor: toPublicVisitor(verifiedVisitor), token: authToken };
+  return { verified: true, visitor: toPublicVisitor({ ...verifiedVisitor, name: verifiedVisitor.name || '' }), token: authToken };
 }
 
 export async function forgotPassword(widgetId, email) {

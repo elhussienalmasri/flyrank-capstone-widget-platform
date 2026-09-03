@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import asyncHandler from '../utils/asyncHandler.js';
 import { validateBody } from '../middleware/validate.js';
+import { requireVisitorAuth } from '../middleware/auth.js';
 import { visitorAuthRateLimiter } from '../middleware/rateLimit.js';
 import {
   visitorSignupSchema,
@@ -31,6 +32,12 @@ router.post(
   visitorAuthRateLimiter,
   validateBody(visitorLoginSchema),
   asyncHandler(visitorAuthController.login)
+);
+
+router.get(
+  '/widgets/:id/me',
+  requireVisitorAuth,
+  asyncHandler(visitorAuthController.me)
 );
 
 router.post(

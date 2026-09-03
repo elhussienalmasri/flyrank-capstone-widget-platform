@@ -19,6 +19,12 @@ export async function findByEmailForWidget(widgetId, email) {
   return rows[0] || null;
 }
 
+// Finds one visitor account by its unique visitor ID.
+export async function findVisitorById(visitorId) {
+  const { rows } = await query('SELECT * FROM widget_visitors WHERE id = $1', [visitorId]);
+  return rows[0] || null;
+}
+
 export async function findByEmailForTenant(tenantId, email) {
   const { rows } = await query(
     `SELECT * FROM widget_visitors WHERE tenant_id = $1 AND email = $2

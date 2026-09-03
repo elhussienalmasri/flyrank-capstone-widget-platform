@@ -319,7 +319,15 @@
             if (onPending) onPending(payload.email);
             return;
           }
+          // Supports two choices to match customer website requirements: some manage
+          // sessions by reading local storage, while others prefer to receive the values through an event.
+          // Saves the visitor token and ID so the customer website can restore the session after a refresh.
           localStorage.setItem('widget_visitor_token_' + widgetId, body.token);
+          localStorage.setItem('widget_visitor_id_' + widgetId, body.visitor.id);
+          // Sends the authenticated visitor values to customer websites that listen for this event.
+          window.dispatchEvent(new CustomEvent('widget-visitor-authenticated', {
+            detail: { widgetId: widgetId, visitorId: body.visitor.id, email: body.visitor.email },
+          }));
           statusMsg.style.color = '#16a34a';
           statusMsg.textContent = 'Account created! You are now signed up.';
           form.reset();
@@ -446,6 +454,10 @@
         })
         .then(function (body) {
           localStorage.setItem('widget_visitor_token_' + widgetId, body.token);
+          localStorage.setItem('widget_visitor_id_' + widgetId, body.visitor.id);
+          window.dispatchEvent(new CustomEvent('widget-visitor-authenticated', {
+            detail: { widgetId: widgetId, visitorId: body.visitor.id, email: body.visitor.email },
+          }));
           statusMsg.style.color = '#16a34a';
           statusMsg.textContent = 'Logged in!';
           form.reset();
@@ -477,6 +489,10 @@
         area.appendChild(buildFormShell(config));
         area.appendChild(buildCodeVerifyForm(config, email, function onVerified(body) {
           localStorage.setItem('widget_visitor_token_' + widgetId, body.token);
+          localStorage.setItem('widget_visitor_id_' + widgetId, body.visitor.id);
+          window.dispatchEvent(new CustomEvent('widget-visitor-authenticated', {
+            detail: { widgetId: widgetId, visitorId: body.visitor.id, email: body.visitor.email },
+          }));
           area.innerHTML = '';
           area.appendChild(buildFormShell(config));
           var successMsg = document.createElement('p');

@@ -35,6 +35,8 @@ test('signup + login happy path returns a token', async () => {
   assert.strictEqual(signupRes.status, 201);
   assert.ok(signupRes.body.token);
   assert.strictEqual(signupRes.body.visitor.email, email);
+  assert.ok(signupRes.body.visitor.id);
+  assert.strictEqual(signupRes.body.visitor.name, 'Visitor Two');
 
   // Logging in via a DIFFERENT widget under the same tenant must
   // still find the account — proves tenant-scoping, not widget-scoping.
@@ -43,6 +45,35 @@ test('signup + login happy path returns a token', async () => {
   });
   assert.strictEqual(loginRes.status, 200);
   assert.ok(loginRes.body.token);
+  assert.strictEqual(loginRes.body.visitor.id, signupRes.body.visitor.id);
+  assert.strictEqual(loginRes.body.visitor.name, 'Visitor Two');
+});
+
+test('visitor me returns only safe visitor data for the widget token', async () => {
+  const token = await registerTenant('visitorme');
+  const widgetId = await createWidget(token, 'signup');
+  const otherWidgetId = await createWidget(token, 'signup');
+  const email = `visitorme-${Date.now()}@example.com`;
+
+  const signupRes = await request('POST', `/widgets/${widgetId}/signup`, {
+    name: 'Visitor Me', email, password: 'password123', confirmPassword: 'password123',
+  });
+
+  const unauthenticated = await request('GET', `/widgets/${widgetId}/me`);
+  assert.strictEqual(unauthenticated.status, 401);
+
+  const ownerRouteWithVisitorToken = await request('GET', '/api/widgets', null, signupRes.body.token);
+  assert.strictEqual(ownerRouteWithVisitorToken.status, 401);
+
+  const meRes = await request('GET', `/widgets/${widgetId}/me`, null, signupRes.body.token);
+  assert.strictEqual(meRes.status, 200);
+  assert.strictEqual(meRes.body.visitor.id, signupRes.body.visitor.id);
+  assert.strictEqual(meRes.body.visitor.email, email);
+  assert.strictEqual(meRes.body.visitor.name, 'Visitor Me');
+  assert.strictEqual(meRes.body.visitor.password_hash, undefined);
+
+  const wrongWidget = await request('GET', `/widgets/${otherWidgetId}/me`, null, signupRes.body.token);
+  assert.strictEqual(wrongWidget.status, 403);
 });
 
 test('signup rejects a duplicate email on the SAME widget', async () => {
@@ -206,6 +237,8 @@ test('signup on a widget WITH verification enabled defers account creation until
   assert.strictEqual(verifyRes.body.verified, true);
   assert.ok(verifyRes.body.token, 'expected a login token immediately after verification');
   assert.strictEqual(verifyRes.body.visitor.emailVerified, true);
+  assert.ok(verifyRes.body.visitor.id);
+  assert.strictEqual(verifyRes.body.visitor.name, 'Visitor');
 
   // Now the account exists — login works.
   const loginAfterRes = await request('POST', `/widgets/${widgetId}/login`, { email, password: 'password123' });
